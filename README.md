@@ -14,4 +14,4 @@ Then activate the environment:
 
 Then run the example:
 
-`python example.py
+`python example.py`
