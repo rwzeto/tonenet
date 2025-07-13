@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 main.py — Mandarin tone detector (ToneNet weights, Keras-3 safe)
 
@@ -20,37 +19,46 @@ import librosa, librosa.display
 from PIL import Image
 import tensorflow as tf
 from tensorflow.keras import Sequential, Input
-from tensorflow.keras.layers import (Conv2D, BatchNormalization, Activation,
-                                     MaxPool2D, Flatten, Dense)
+from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxPool2D, Flatten, Dense
 
 # ───────────────────────── constants ───────────────────────── #
-FS         = 16_000           # input sample-rate
-IMG_SIZE   = 225              # ToneNet expects 225×225
-MODEL_PATH = "ToneNet.h5"     # your downloaded weights
+FS = 16_000  # input sample-rate
+IMG_SIZE = 225  # ToneNet expects 225×225
+MODEL_PATH = "ToneNet.h5"  # your downloaded weights
+
 
 # ─────────────────── ToneNet network skeleton ────────────────── #
 def build_tonet() -> tf.keras.Model:
     return Sequential(
         [
             Input(shape=(IMG_SIZE, IMG_SIZE, 3)),
-            Conv2D(64,  (5, 5), strides=3, padding="same"), BatchNormalization(), Activation("relu"),
+            Conv2D(64, (5, 5), strides=3, padding="same"),
+            BatchNormalization(),
+            Activation("relu"),
             MaxPool2D((3, 3), strides=3, padding="same"),
-
-            Conv2D(128, (3, 3),           padding="same"), BatchNormalization(), Activation("relu"),
+            Conv2D(128, (3, 3), padding="same"),
+            BatchNormalization(),
+            Activation("relu"),
             MaxPool2D((2, 2), strides=2, padding="same"),
-
-            Conv2D(256, (3, 3),           padding="same"), BatchNormalization(), Activation("relu"),
+            Conv2D(256, (3, 3), padding="same"),
+            BatchNormalization(),
+            Activation("relu"),
             MaxPool2D((2, 2), strides=2, padding="same"),
-
-            Conv2D(256, (3, 3),           padding="same"), BatchNormalization(), Activation("relu"),
+            Conv2D(256, (3, 3), padding="same"),
+            BatchNormalization(),
+            Activation("relu"),
             MaxPool2D((2, 2), strides=2, padding="same"),
-
-            Conv2D(512, (3, 3),           padding="same"), BatchNormalization(), Activation("relu"),
+            Conv2D(512, (3, 3), padding="same"),
+            BatchNormalization(),
+            Activation("relu"),
             MaxPool2D((2, 2), strides=2, padding="same"),
-
             Flatten(),
-            Dense(1024), BatchNormalization(), Activation("relu"),
-            Dense(1024), BatchNormalization(), Activation("relu"),
+            Dense(1024),
+            BatchNormalization(),
+            Activation("relu"),
+            Dense(1024),
+            BatchNormalization(),
+            Activation("relu"),
             Dense(4, activation="softmax"),
         ],
         name="ToneNet",
@@ -61,6 +69,7 @@ print("▶ Building ToneNet …")
 model = build_tonet()
 print(f"▶ Loading weights from {MODEL_PATH}")
 model.load_weights(MODEL_PATH)
+
 
 # ─────────────────────── audio capture ─────────────────────── #
 def record(fs: int = FS) -> np.ndarray:
@@ -130,8 +139,8 @@ def preprocess_caffe(rgb: np.ndarray) -> np.ndarray:
 def main() -> None:
     warnings.filterwarnings("ignore", category=UserWarning)
     audio = record()
-    rgb_img = mel_image(audio)           # uint8 RGB
-    net_in  = preprocess_caffe(rgb_img)  # float32 BGR, mean-centered
+    rgb_img = mel_image(audio)  # uint8 RGB
+    net_in = preprocess_caffe(rgb_img)  # float32 BGR, mean-centered
 
     probs = model.predict(net_in[None], verbose=0)[0]
     print("Raw probabilities:", np.round(probs, 3))
