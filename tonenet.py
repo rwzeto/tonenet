@@ -135,6 +135,45 @@ def preprocess_caffe(rgb: np.ndarray) -> np.ndarray:
     return bgr - mean
 
 
+def detect_tone(
+    audio: np.ndarray,
+    sr: int = FS,
+    return_probs: bool = False,
+) -> int | tuple[int, np.ndarray]:
+    """
+    Detects the Mandarin tone (1-4) for a given audio segment.
+
+    Parameters
+    ----------
+    audio : np.ndarray
+        1-D mono waveform (float32, any length, range -1…1).
+        If the audio comes directly from sounddevice/librosa it’s
+        already float32; otherwise call `librosa.util.normalize` first.
+    sr : int, default FS (16 000)
+        Sample rate of the `audio` array.
+    return_probs : bool, default False
+        If True, also return the raw soft-max probabilities.
+
+    Returns
+    -------
+    int
+        Detected tone number (1–4).
+        If `return_probs` is True, returns
+        `(tone: int, probs: np.ndarray)` instead.
+    """
+    # Build ToneNet input exactly like training
+    rgb_img = mel_image(audio, sr=sr)  # (225, 225, 3) uint8 RGB
+    net_in = preprocess_caffe(rgb_img)  # float32 BGR, mean-centered
+
+    # Forward pass (batch dimension added)
+    probs = model.predict(net_in[None], verbose=0)[0]
+    tone = int(np.argmax(probs) + 1)
+
+    if return_probs:
+        return tone, probs
+    return tone
+
+
 # ─────────────────────────── main ─────────────────────────── #
 def main() -> None:
     warnings.filterwarnings("ignore", category=UserWarning)
