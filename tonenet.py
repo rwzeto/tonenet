@@ -14,7 +14,14 @@ import numpy as np
 import librosa
 import librosa.display
 from PIL import Image
+
+import os, logging
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # 0=all, 1=no INFO, 2+no WARN, 3=fatal only
+
 import tensorflow as tf
+
+tf.get_logger().setLevel(logging.ERROR)  # hush high-level Python TF logs
 from tensorflow.keras import Sequential, Input
 from tensorflow.keras.layers import (
     Conv2D,

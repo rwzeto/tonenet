@@ -15,3 +15,14 @@ Then activate the environment:
 Then run the example:
 
 `python example.py`
+
+Example output (user speaks "你"): 
+
+```
+❯ python example.py
+Press ⏎ to start recording …
+Recording — press ⏎ again to stop.
+
+Captured 1.30 s
+Detected tone → 3
+```
